@@ -54,12 +54,12 @@
   .char-thumb.accent{ border-color:var(--border-accent); }
   .char-thumb .placeholder-letter{ font-size:48px; font-weight:700; color:var(--border-default); }
   .char-count{
-    position:absolute; top:6px; right:6px;
-    background: linear-gradient(135deg, rgba(94,106,191,0.5) 0%, rgba(136,167,221,0.5) 50%, rgba(178,229,251,0.5) 100%);
-    backdrop-filter: blur(12px) saturate(160%);
-    -webkit-backdrop-filter: blur(12px) saturate(160%);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius:20px; padding:5px 10px; font-size:12px; font-weight:600; color:#fff;
+    position:absolute; top:0; right:0;
+    background: linear-gradient(135deg, #5E6ABF 0%, #88A7DD 55%, #B2E5FB 100%);
+    backdrop-filter: blur(6px) saturate(160%);
+    -webkit-backdrop-filter: blur(6px) saturate(160%);
+    box-shadow: 0 2px 8px rgba(30,20,90,0.25), inset 0 1px 0 rgba(255,255,255,0.3);
+    border-radius:0 16px 0 12px; padding:7px 12px; font-size:13px; font-weight:700; color:#fff;
     display:flex; align-items:center; gap:3px;
   }
   .char-count svg{ width:12px; height:12px; }
@@ -517,10 +517,22 @@
     return `<span class="placeholder-letter">${escapeHtml((c.name || '?').charAt(0))}</span>`;
   }
 
+  function formatCount(n){
+    if(n >= 10000){
+      const v = n / 10000;
+      return (v % 1 === 0 ? v.toFixed(0) : v.toFixed(1)) + '만';
+    }
+    if(n >= 1000){
+      const v = n / 1000;
+      return (v % 1 === 0 ? v.toFixed(0) : v.toFixed(1)) + '천';
+    }
+    return String(n);
+  }
+
   function countBadgeHtml(c){
     const count = store.getMessages(c.id).length;
     if(count === 0) return '';
-    return `<div class="char-count"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8-1.06 0-2.076-.147-3-.42L3 21l1.5-4.5C3.552 15.246 3 13.673 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8Z"/></svg>${count}</div>`;
+    return `<div class="char-count"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8-1.06 0-2.076-.147-3-.42L3 21l1.5-4.5C3.552 15.246 3 13.673 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8Z"/></svg>${formatCount(count)}</div>`;
   }
 
   function charCardHtml(c){
