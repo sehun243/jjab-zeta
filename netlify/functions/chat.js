@@ -38,16 +38,31 @@ exports.handler = async (event) => {
   }
 
   try {
+    // systemInstruction이 문자열로 올 경우 Gemini API 규격에 맞게 객체 포맷팅
+    let formattedSystemInstruction = undefined;
+    if (systemInstruction) {
+      if (typeof systemInstruction === 'string') {
+        formattedSystemInstruction = { parts: [{ text: systemInstruction }] };
+      } else {
+        formattedSystemInstruction = systemInstruction;
+      }
+    }
+
+    const payload = {
+      contents,
+      generationConfig: { temperature: 1.0, maxOutputTokens: 500 },
+    };
+
+    if (formattedSystemInstruction) {
+      payload.systemInstruction = formattedSystemInstruction;
+    }
+
     const geminiRes = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
-        body: JSON.stringify({
-          systemInstruction,
-          contents,
-          generationConfig: { temperature: 1.0, maxOutputTokens: 500 },
-        }),
+        body: JSON.stringify(payload),
       }
     );
 
