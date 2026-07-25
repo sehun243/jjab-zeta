@@ -31,7 +31,7 @@
     height:70px; display:flex; align-items:center; padding:0 30px; gap:12px;
     background:var(--bg); z-index:15;
   }
-  .logo-symbol{ width:35px; height:35px; flex-shrink:0; }
+  .logo-symbol{ width:35px; height:35px; flex-shrink:0; margin-right:5px; }
   .logo-symbol img{ width:100%; height:100%; object-fit:contain; }
   .topbar .title{ font-weight:600; font-size:18px; letter-spacing:-0.09px; }
   .topbar .leaderboard{ font-weight:600; font-size:18px; color:var(--text-tertiary); letter-spacing:-0.09px; margin-left:8px; }
@@ -57,16 +57,15 @@
   .char-thumb .placeholder-letter{ font-size:48px; font-weight:700; color:var(--border-default); }
   .char-count{
     position:absolute; top:0; right:0;
-    background: linear-gradient(135deg, #5E6ABF 0%, #88A7DD 55%, #B2E5FB 100%);
-    backdrop-filter: blur(6px) saturate(160%);
-    -webkit-backdrop-filter: blur(6px) saturate(160%);
-    box-shadow: 0 2px 8px rgba(30,20,90,0.25), inset 0 1px 0 rgba(255,255,255,0.3);
+    background: linear-gradient(135deg, rgba(94,106,191,0.5) 0%, rgba(136,167,221,0.5) 55%, rgba(178,229,251,0.5) 100%);
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
     border-radius:0 16px 0 12px; padding:7px 12px; font-size:13px; font-weight:700; color:#fff;
     display:flex; align-items:center; gap:3px;
   }
   .char-count svg{ width:12px; height:12px; }
   .char-name{ font-weight:600; font-size:18px; letter-spacing:-0.1px; margin-top:12px; }
-  .char-desc{ font-weight:500; font-size:16px; color:var(--text-secondary); margin-top:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .char-desc{ font-weight:500; font-size:15px; color:var(--text-secondary); margin-top:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .char-keywords{ font-weight:500; font-size:14px; color:var(--text-tertiary); margin-top:3px; }
   .char-card-actions{
     position:absolute; top:6px; left:6px; display:flex; gap:4px; z-index:2;
@@ -118,6 +117,20 @@
   }
   .btn-primary:disabled{ opacity:0.4; cursor:not-allowed; }
 
+  /* Character detail page */
+  .detail-wrap{ padding:8px 30px 30px; }
+  .detail-thumb{
+    width:100%; height:280px; border-radius:20px; background:var(--card-bg);
+    border:1px solid var(--border-default); background-size:cover; background-position:center;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .detail-thumb .placeholder-letter{ font-size:72px; font-weight:700; color:var(--border-default); }
+  .detail-name{ font-weight:700; font-size:24px; margin-top:18px; }
+  .detail-desc{ font-size:15px; color:var(--text-secondary); margin-top:6px; }
+  .detail-keywords{ font-size:14px; color:var(--text-tertiary); margin-top:6px; }
+  .detail-section-title{ font-size:14px; font-weight:600; color:var(--text-secondary); margin-top:28px; margin-bottom:8px; }
+  .detail-personality{ font-size:14px; line-height:1.6; color:var(--text-primary); white-space:pre-wrap; }
+
   /* Chatroom */
   #page-chatroom.active{ display:flex; flex-direction:column; height:100vh; padding-bottom:0; }
   .chatroom-header{ height:64px; display:flex; align-items:center; gap:10px; padding:0 16px; border-bottom:1px solid var(--card-bg); flex-shrink:0; }
@@ -140,7 +153,9 @@
     position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:390px;
     display:flex; gap:8px; padding:12px 16px 20px; background:var(--bg); border-top:1px solid var(--card-bg);
   }
-  .chatroom-inputbar input{ flex:1; background:var(--card-bg); border:1px solid var(--border-default); border-radius:24px; padding:12px 16px; color:#fff; font-size:15px; }
+  .chatroom-inputbar input{ flex:1; min-width:0; background:var(--card-bg); border:1px solid var(--border-default); border-radius:24px; padding:12px 16px; color:#fff; font-size:15px; }
+  .chatroom-inputbar input::placeholder{ color:var(--text-secondary); }
+  .msg em{ color:var(--text-secondary); font-style:italic; }
   .send-btn{ width:44px; height:44px; border-radius:50%; background:var(--accent); border:none; color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
   .send-btn svg{ width:20px; height:20px; }
 
@@ -262,6 +277,25 @@
     <div class="empty-hint" style="padding-top:40px;">프로필 화면은 다음에 만들어볼까요?</div>
   </div>
 
+  <!-- ================= CHARACTER DETAIL ================= -->
+  <div class="page" id="page-detail">
+    <div class="topbar">
+      <button class="icon-btn" id="btn-back-detail">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <span class="title">캐릭터 소개</span>
+    </div>
+    <div class="detail-wrap">
+      <div class="detail-thumb" id="detail-thumb"></div>
+      <div class="detail-name" id="detail-name"></div>
+      <div class="detail-desc" id="detail-desc"></div>
+      <div class="detail-keywords" id="detail-keywords"></div>
+      <div class="detail-section-title">캐릭터 소개</div>
+      <div class="detail-personality" id="detail-personality"></div>
+      <button class="btn-primary" id="btn-start-chat" style="margin-top:24px;">대화 시작하기</button>
+    </div>
+  </div>
+
   <!-- ================= CHATROOM ================= -->
   <div class="page" id="page-chatroom">
     <div class="chatroom-header">
@@ -271,7 +305,6 @@
       <div class="chat-avatar" id="chatroom-avatar" style="width:36px;height:36px;"></div>
       <span class="title" id="chatroom-name"></span>
       <div class="topbar-spacer"></div>
-      <span style="font-size:11px; color:var(--text-tertiary);">*상황* **강조**</span>
     </div>
     <div class="chatroom-messages" id="chatroom-messages"></div>
     <div class="chatroom-inputbar">
@@ -286,19 +319,19 @@
   <!-- Bottom nav -->
   <nav class="nav-bar" id="nav-bar">
     <button class="nav-item on" data-page="home">
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 4H7a2 2 0 0 0-2 2v14"/><path d="M18.37 3.63 14 8l5.63 5.63a2.001 2.001 0 0 0 0-2.83l-2.8-2.8a2 2 0 0 1 0-2.83l2.63-2.63a1 1 0 0 0-1.09-1.64Z"/><path d="M20 21v-8a2 2 0 0 0-2-2h-2"/><path d="M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 4H7a2 2 0 0 0-2 2v14"/><path d="M18.37 3.63 14 8l5.63 5.63a2.001 2.001 0 0 0 0-2.83l-2.8-2.8a2 2 0 0 1 0-2.83l2.63-2.63a1 1 0 0 0-1.09-1.64Z"/><path d="M20 21v-8a2 2 0 0 0-2-2h-2"/><path d="M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"/></svg>
       <span>홈</span>
     </button>
     <button class="nav-item" data-page="chat">
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/><path d="M8 12h.01"/><path d="M12 12h.01"/><path d="M16 12h.01"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/><path d="M8 12h.01"/><path d="M12 12h.01"/><path d="M16 12h.01"/></svg>
       <span>대화</span>
     </button>
     <button class="nav-item" data-page="create">
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="M9 12h6"/><path d="M12 9v6"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="M9 12h6"/><path d="M12 9v6"/></svg>
       <span>창작</span>
     </button>
     <button class="nav-item" data-page="profile">
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 21a8 8 0 0 0-16 0"/><circle cx="10" cy="8" r="5"/><path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 21a8 8 0 0 0-16 0"/><circle cx="10" cy="8" r="5"/><path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"/></svg>
       <span>프로필</span>
     </button>
   </nav>
@@ -340,16 +373,28 @@
   }
   const authReady = ensureAuth(); // 앱 시작하자마자 로그인 시도, 완료될 때까지 기다릴 수 있는 Promise
 
-  async function syncCharacterToCloud(c){
+  async function syncCharacterToCloud(c, isNew){
     if(!currentUid) await authReady; // 로그인 끝날 때까지 기다림 (경합 문제 방지)
     if(!currentUid) return; // 그래도 안 되면(오프라인 등) 조용히 스킵 — 로컬엔 이미 저장됨
     try{
-      await db.collection('characters').doc(c.id).set({
+      const data = {
         id: c.id, ownerId: currentUid, name: c.name, desc: c.desc || '',
         keywords: c.keywords || '', personality: c.personality, greeting: c.greeting,
         image: c.image || null, createdAt: c.createdAt,
-      });
+      };
+      if(isNew) data.totalChatCount = 0; // 새 캐릭터일 때만 카운터 초기화 (수정 시엔 기존 총 대화수 유지)
+      await db.collection('characters').doc(c.id).set(data, { merge: true });
     }catch(e){ console.warn('클라우드 저장 실패(로컬에는 저장됨):', e.message); }
+  }
+
+  async function incrementTotalChatCount(charId){
+    if(!currentUid) await authReady;
+    if(!currentUid) return;
+    try{
+      await db.collection('characters').doc(charId).update({
+        totalChatCount: firebase.firestore.FieldValue.increment(1)
+      });
+    }catch(e){ console.warn('총 대화수 갱신 실패:', e.message); }
   }
 
   async function deleteCharacterFromCloud(id){
@@ -379,7 +424,7 @@
     for(const c of chars){
       try{
         const docSnap = await db.collection('characters').doc(c.id).get();
-        if(!docSnap.exists) await syncCharacterToCloud(c);
+        if(!docSnap.exists) await syncCharacterToCloud(c, true);
       }catch(e){ /* 오프라인 등 - 다음에 다시 시도됨 */ }
     }
   }
@@ -407,7 +452,7 @@
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('page-' + name).classList.add('active');
     document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('on', b.dataset.page === name));
-    document.getElementById('nav-bar').style.display = (name === 'chatroom' || name === 'search') ? 'none' : 'flex';
+    document.getElementById('nav-bar').style.display = (name === 'chatroom' || name === 'search' || name === 'detail') ? 'none' : 'flex';
     if(name === 'chat') renderChatList();
     if(name === 'home') renderHomeCharacters();
     if(name === 'create') renderCreateMyCharacters();
@@ -479,7 +524,7 @@
     };
     chars.push(newChar);
     store.saveCharacters(chars);
-    syncCharacterToCloud(newChar);
+    syncCharacterToCloud(newChar, true);
     characterCache[newChar.id] = newChar;
     resetCreateForm();
     openChatroom(newChar.id);
@@ -542,7 +587,7 @@
   }
 
   function countBadgeHtml(c){
-    const count = store.getMessages(c.id).length;
+    const count = (typeof c.totalChatCount === 'number') ? c.totalChatCount : store.getMessages(c.id).length;
     if(count === 0) return '';
     return `<div class="char-count"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8-1.06 0-2.076-.147-3-.42L3 21l1.5-4.5C3.552 15.246 3 13.673 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8Z"/></svg>${formatCount(count)}</div>`;
   }
@@ -579,7 +624,7 @@
       el.style.position = 'relative';
     }
 
-    el.addEventListener('click', () => openChatroom(c.id));
+    el.addEventListener('click', () => showCharacterDetail(c));
     return el;
   }
 
@@ -603,10 +648,10 @@
 
     chars.slice().sort((a,b) => b.createdAt - a.createdAt).forEach(c => recentWrap.appendChild(makeCharCard(c)));
 
-    // 인기 캐릭터: 이 기기에서 실제로 대화해본 캐릭터만, 대화량 기준 정렬
-    // (다른 사람들의 실제 이용량까지 반영한 진짜 '인기'는 별도의 공용 카운터가 필요해서, 지금은 내 기기 기준이에요)
-    const withActivity = chars.filter(c => store.getMessages(c.id).length > 0)
-      .sort((a,b) => store.getMessages(b.id).length - store.getMessages(a.id).length);
+    // 인기 캐릭터: 전체 유저의 총 대화수(totalChatCount) 기준 정렬
+    function effCount(c){ return (typeof c.totalChatCount === 'number') ? c.totalChatCount : store.getMessages(c.id).length; }
+    const withActivity = chars.filter(c => effCount(c) > 0)
+      .sort((a,b) => effCount(b) - effCount(a));
 
     const popSection = document.getElementById('home-popular-section');
     const popDivider = document.getElementById('home-popular-divider');
@@ -689,6 +734,26 @@
   }
 
   // ---------- Chatroom ----------
+  // ---------- Character detail page ----------
+  let detailCharId = null;
+  let detailReturnPage = 'home';
+  function showCharacterDetail(c){
+    detailCharId = c.id;
+    characterCache[c.id] = c;
+    const activeEl = document.querySelector('.page.active');
+    if(activeEl && activeEl.id !== 'page-detail') detailReturnPage = activeEl.id.replace('page-', '');
+    const thumbEl = document.getElementById('detail-thumb');
+    thumbEl.style.backgroundImage = c.image ? `url(${c.image})` : '';
+    thumbEl.innerHTML = c.image ? '' : `<span class="placeholder-letter">${escapeHtml((c.name || '?').charAt(0))}</span>`;
+    document.getElementById('detail-name').textContent = c.name;
+    document.getElementById('detail-desc').textContent = c.desc || '';
+    document.getElementById('detail-keywords').textContent = c.keywords ? c.keywords.split(',').map(k => '#' + k.trim()).join(' ') : '';
+    document.getElementById('detail-personality').textContent = c.personality || '';
+    showPage('detail');
+  }
+  document.getElementById('btn-back-detail').addEventListener('click', () => showPage(detailReturnPage));
+  document.getElementById('btn-start-chat').addEventListener('click', () => { if(detailCharId) openChatroom(detailCharId); });
+
   function openChatroom(charId){
     currentChatCharId = charId;
     const c = store.getCharacters().find(x => x.id === charId) || characterCache[charId];
@@ -745,6 +810,10 @@
     store.saveMessages(currentChatCharId, msgs);
     renderMessages(msgs);
     input.value = '';
+    incrementTotalChatCount(currentChatCharId);
+    if(characterCache[currentChatCharId]){
+      characterCache[currentChatCharId].totalChatCount = (characterCache[currentChatCharId].totalChatCount || 0) + 1;
+    }
 
     const wrap = document.getElementById('chatroom-messages');
     const typingEl = document.createElement('div');
