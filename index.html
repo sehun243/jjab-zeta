@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>럴러바이</title>
-<meta name="theme-color" content="#12141a">
+<meta name="theme-color" content="#5E6ABF">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
 <style>
@@ -350,7 +350,7 @@
 
   // ---------- Firebase (다른 창작자 캐릭터 공유용) ----------
   const firebaseConfig = {
-    apiKey: "AQ.Ab8RN6Iiv4HZMa-GEZKey27jzM1pGZftgXqf_Hjf3GPOZecgRA",
+    apiKey: "AIzaSyDHSIhpiku2VnTpIJSl3lznUGdWDTS8D6c",
     authDomain: "jjab-zeta.firebaseapp.com",
     projectId: "jjab-zeta",
     storageBucket: "jjab-zeta.firebasestorage.app",
@@ -423,8 +423,15 @@
     const chars = store.getCharacters();
     for(const c of chars){
       try{
-        const docSnap = await db.collection('characters').doc(c.id).get();
-        if(!docSnap.exists) await syncCharacterToCloud(c, true);
+        const docRef = db.collection('characters').doc(c.id);
+        const docSnap = await docRef.get();
+        if(!docSnap.exists){
+          await syncCharacterToCloud(c, true); // 신규 문서: totalChatCount 0으로 초기화
+        } else if(typeof docSnap.data().totalChatCount !== 'number'){
+          // 예전(기능 추가 전)에 이미 올라간 문서: 필드가 없으면 이 기기의 로컬 대화 수로 채워넣기
+          const seed = store.getMessages(c.id).length;
+          await docRef.set({ totalChatCount: seed }, { merge: true });
+        }
       }catch(e){ /* 오프라인 등 - 다음에 다시 시도됨 */ }
     }
   }
