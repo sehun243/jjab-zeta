@@ -9,7 +9,7 @@
  * → GEMINI_API_KEY 추가, 값에 실제 Gemini API 키 입력 → 저장 (재배포 필요할 수 있음)
  */
 
-const MODEL = 'gemini-2.5-flash-lite';
+const MODEL = 'gemini-3.5-flash-lite';
 
 function corsHeaders(){
   return {
