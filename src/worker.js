@@ -43,16 +43,23 @@ async function handleChat(request, env){
   }
 
   try{
+    // systemInstruction이 문자열로 와도 Gemini API 규격(객체)에 맞게 자동 변환
+    let formattedSystemInstruction;
+    if(systemInstruction){
+      formattedSystemInstruction = (typeof systemInstruction === 'string')
+        ? { parts: [{ text: systemInstruction }] }
+        : systemInstruction;
+    }
+
+    const payload = { contents, generationConfig: { temperature: 1.0, maxOutputTokens: 500 } };
+    if(formattedSystemInstruction) payload.systemInstruction = formattedSystemInstruction;
+
     const geminiRes = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
-        body: JSON.stringify({
-          systemInstruction,
-          contents,
-          generationConfig: { temperature: 1.0, maxOutputTokens: 500 },
-        }),
+        body: JSON.stringify(payload),
       }
     );
 
