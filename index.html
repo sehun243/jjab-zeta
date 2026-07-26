@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>럴러바이</title>
-<meta name="theme-color" content="#5E6ABF">
+<meta name="theme-color" content="#12141a">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
 <style>
@@ -445,6 +445,14 @@
       let id = localStorage.getItem('jjab_visitor_id');
       if(!id){ id = 'v_' + Math.random().toString(36).slice(2) + Date.now(); localStorage.setItem('jjab_visitor_id', id); }
       return id;
+    },
+    // 대화수는 절대 줄어드는 것처럼 보이면 안 되므로, 지금까지 본 값 중 최댓값을 기기에 기억해둠
+    getSeenMaxCount(charId){
+      return parseInt(localStorage.getItem('jjab_maxcount_' + charId) || '0', 10);
+    },
+    recordSeenCount(charId, n){
+      const prev = this.getSeenMaxCount(charId);
+      if(n > prev) localStorage.setItem('jjab_maxcount_' + charId, String(n));
     }
   };
 
@@ -627,7 +635,9 @@
   }
 
   function countBadgeHtml(c){
-    const count = (typeof c.totalChatCount === 'number') ? c.totalChatCount : store.getMessages(c.id).length;
+    const raw = (typeof c.totalChatCount === 'number') ? c.totalChatCount : store.getMessages(c.id).length;
+    store.recordSeenCount(c.id, raw);
+    const count = Math.max(raw, store.getSeenMaxCount(c.id));
     if(count === 0) return '';
     return `<div class="char-count"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8-1.06 0-2.076-.147-3-.42L3 21l1.5-4.5C3.552 15.246 3 13.673 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8Z"/></svg>${formatCount(count)}</div>`;
   }
@@ -689,7 +699,10 @@
     chars.slice().sort((a,b) => b.createdAt - a.createdAt).forEach(c => recentWrap.appendChild(makeCharCard(c)));
 
     // 인기 캐릭터: 전체 유저의 총 대화수(totalChatCount) 기준 정렬
-    function effCount(c){ return (typeof c.totalChatCount === 'number') ? c.totalChatCount : store.getMessages(c.id).length; }
+    function effCount(c){
+      const raw = (typeof c.totalChatCount === 'number') ? c.totalChatCount : store.getMessages(c.id).length;
+      return Math.max(raw, store.getSeenMaxCount(c.id));
+    }
     const withActivity = chars.filter(c => effCount(c) > 0)
       .sort((a,b) => effCount(b) - effCount(a));
 
