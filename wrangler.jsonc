@@ -1,1 +1,9 @@
-
+{
+  "name": "jjab-zeta",
+  "compatibility_date": "2026-07-25",
+  "main": "src/worker.js",
+  "assets": {
+    "directory": "./",
+    "binding": "ASSETS"
+  }
+}
