@@ -5,5 +5,9 @@
   "assets": {
     "directory": "./",
     "binding": "ASSETS"
+  },
+  // Gemini API 호출 시 지역 차단 방지를 위한 GCP 미국 리전 지정
+  "placement": {
+    "region": "gcp:us-central1"
   }
 }
