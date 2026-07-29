@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>랠리</title>
-<meta name="theme-color" content="#5E6ABF">
+<meta name="theme-color" content="#12141a">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
 <style>
@@ -229,7 +229,7 @@
   .nav-item{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; width:45px; height:45px; color:#fff; background:none; border:none; cursor:pointer; }
   .nav-item svg{ width:24px; height:24px; }
   .nav-item span{ font-weight:500; font-size:12px; letter-spacing:-0.06px; }
-  .nav-item.on{ color:#a9b1ff; }
+  .nav-item.on{ color:#D7DBE7; }
 </style>
 </head>
 <body>
@@ -745,10 +745,24 @@
     startNoticeAutoplay();
   });
 
-  function showPage(name){
-    const activeEl = document.querySelector('.page.active');
-    const oldName = activeEl ? activeEl.id.replace('page-', '') : null;
+  let currentTabName = 'home';
+  let lastPageName = 'home';
+  let slideCleanupTimer = null;
 
+  function clearPendingSlideCleanup(){
+    if(slideCleanupTimer){ clearTimeout(slideCleanupTimer); slideCleanupTimer = null; }
+  }
+
+  function hardResetOtherPages(keepIds){
+    document.querySelectorAll('.page').forEach(p => {
+      if(!keepIds.includes(p.id)){
+        p.classList.remove('active', 'sliding');
+        p.style.transform = '';
+      }
+    });
+  }
+
+  function showPage(name){
     document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('on', b.dataset.page === name));
     document.getElementById('nav-bar').style.display = (name === 'chatroom' || name === 'search' || name === 'detail' || name === 'signup') ? 'none' : 'flex';
     if(name === 'chat') renderChatList();
@@ -756,18 +770,33 @@
     if(name === 'create') renderCreateMyCharacters();
     if(name === 'profile') renderProfileContent();
 
-    if(oldName && oldName !== name && TAB_ORDER.includes(oldName) && TAB_ORDER.includes(name)){
-      slideTabTransition(oldName, name);
+    if(TAB_ORDER.includes(name)){
+      const oldName = currentTabName;
+      if(oldName !== name && TAB_ORDER.includes(oldName)){
+        slideTabTransition(oldName, name);
+      } else {
+        clearPendingSlideCleanup();
+        hardResetOtherPages(['page-' + name]);
+        document.getElementById('page-' + name).classList.add('active');
+      }
+      currentTabName = name;
     } else {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      // 비-탭 페이지(검색/캐릭터소개/채팅방/회원가입): 슬라이드 없이 즉시 전환
+      clearPendingSlideCleanup();
+      hardResetOtherPages(['page-' + name]);
       document.getElementById('page-' + name).classList.add('active');
     }
+    lastPageName = name;
   }
 
   function slideTabTransition(oldName, newName){
+    clearPendingSlideCleanup();
     const oldEl = document.getElementById('page-' + oldName);
     const newEl = document.getElementById('page-' + newName);
     const dir = TAB_ORDER.indexOf(newName) > TAB_ORDER.indexOf(oldName) ? 1 : -1;
+
+    // 지금 전환에 관여하지 않는 다른 페이지는 즉시 확실하게 숨김 처리 (연타 시 겹침 방지)
+    hardResetOtherPages(['page-' + oldName, 'page-' + newName]);
 
     newEl.classList.remove('sliding'); oldEl.classList.remove('sliding');
     newEl.style.transform = `translateX(${dir * 100}%)`;
@@ -779,11 +808,12 @@
       oldEl.style.transform = `translateX(${-dir * 100}%)`;
       newEl.style.transform = 'translateX(0)';
     });
-    setTimeout(() => {
+    slideCleanupTimer = setTimeout(() => {
       oldEl.classList.remove('active', 'sliding');
       newEl.classList.remove('sliding');
       oldEl.style.transform = '';
       newEl.style.transform = '';
+      slideCleanupTimer = null;
     }, 330);
   }
   document.querySelectorAll('.nav-item').forEach(btn => btn.addEventListener('click', () => showPage(btn.dataset.page)));
@@ -1074,8 +1104,7 @@
   function showCharacterDetail(c){
     detailCharId = c.id;
     characterCache[c.id] = c;
-    const activeEl = document.querySelector('.page.active');
-    if(activeEl && activeEl.id !== 'page-detail') detailReturnPage = activeEl.id.replace('page-', '');
+    detailReturnPage = lastPageName;
     const thumbEl = document.getElementById('detail-thumb');
     thumbEl.style.backgroundImage = c.image ? `url(${c.image})` : '';
     thumbEl.innerHTML = c.image ? '' : `<span class="placeholder-letter">${escapeHtml((c.name || '?').charAt(0))}</span>`;
