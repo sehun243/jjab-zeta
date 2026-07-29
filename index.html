@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>랠리</title>
-<meta name="theme-color" content="#12141a">
+<meta name="theme-color" content="#5E6ABF">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
 <style>
@@ -37,6 +37,37 @@
   .topbar .title{ font-weight:600; font-size:18px; letter-spacing:-0.09px; }
   .topbar .leaderboard{ font-weight:600; font-size:18px; color:var(--text-tertiary); letter-spacing:-0.09px; margin-left:8px; }
   .topbar-spacer{ flex:1; }
+
+  /* Notice carousel (홈 상단 소식 배너) */
+  .notice-carousel{ position:relative; margin:4px 30px 20px; border-radius:20px; overflow:hidden; }
+  .notice-track{
+    display:flex; overflow-x:auto; scroll-snap-type:x mandatory; scroll-behavior:smooth;
+    -webkit-overflow-scrolling:touch; scrollbar-width:none;
+  }
+  .notice-track::-webkit-scrollbar{ display:none; }
+  .notice-slide{
+    flex:0 0 100%; scroll-snap-align:start; position:relative; box-sizing:border-box;
+    min-height:170px; padding:22px 100px 22px 22px; border-radius:20px;
+    background: radial-gradient(120% 100% at 85% 0%, rgba(94,106,191,0.55) 0%, rgba(18,20,26,0) 55%), linear-gradient(160deg, #23283a 0%, #12141a 75%);
+    display:flex; flex-direction:column; justify-content:center; gap:8px;
+  }
+  .notice-slide .notice-title{ font-weight:700; font-size:19px; line-height:1.35; }
+  .notice-slide .notice-desc{ font-size:14px; color:var(--text-secondary); line-height:1.5; }
+  .notice-slide .notice-note{ font-size:11.5px; color:var(--text-tertiary); line-height:1.5; margin-top:6px; }
+  .notice-ring{
+    position:absolute; top:26px; right:22px; width:70px; height:70px; border-radius:50%;
+    border:5px solid transparent;
+    background: linear-gradient(140deg, #dff1ff, #6f8cff) border-box;
+    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    filter: drop-shadow(0 0 14px rgba(120,160,255,0.55));
+  }
+  .notice-indicator{
+    position:absolute; bottom:14px; right:16px; background:rgba(0,0,0,0.45); backdrop-filter:blur(6px);
+    border:none; border-radius:20px; padding:6px 12px; color:#fff; font-size:12px; font-weight:600;
+    display:flex; align-items:center; gap:8px; cursor:pointer;
+  }
+  .notice-indicator svg{ width:12px; height:12px; }
 
   /* Sections */
   .section{ padding-top:24px; }
@@ -228,6 +259,14 @@
       <div class="topbar-spacer"></div>
       <button class="icon-btn" id="btn-search">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      </button>
+    </div>
+
+    <div class="notice-carousel" id="notice-carousel">
+      <div class="notice-track" id="notice-track"></div>
+      <button class="notice-indicator" id="notice-indicator">
+        <span id="notice-indicator-text">1 / 1</span>
+        <span id="notice-indicator-icon"></span>
       </button>
     </div>
 
@@ -661,6 +700,76 @@
 
   // ---------- Navigation ----------
   const TAB_ORDER = ['home', 'chat', 'create', 'profile'];
+
+  // ---------- 홈 소식 캐러셀 (자동 5초 슬라이드 + 스와이프 + 반복) ----------
+  const NOTICE_SLIDES = [
+    {
+      title: '광고 없는 AI 캐릭터챗<br>rally로, 지금 정착하세요',
+      desc: '너와 나의 대화가 하나 되어<br>만들어 갈 유니버스',
+      note: '- rally(랠리)가 사용하는 API는 Google의 gemini-3.5-flash-lite로, 광고 없는 서비스 환경을 제공하고 있어요.'
+    },
+    {
+      title: '오픈 베타 테스트!<br>어서오세요, 이 곳에',
+      desc: 'rally에는 재화도, 과금 유도도,<br>그 흔한 현질 요소도 없어요',
+      note: '- 해당 기준은 2026년 7월 28일부터 시행돼요.'
+    }
+  ];
+
+  let noticeIndex = 0;
+  let noticeTimer = null;
+  let noticePaused = false;
+
+  function renderNoticeCarousel(){
+    const track = document.getElementById('notice-track');
+    track.innerHTML = NOTICE_SLIDES.map(s => `
+      <div class="notice-slide">
+        <div class="notice-ring"></div>
+        <div class="notice-title">${s.title}</div>
+        <div class="notice-desc">${s.desc}</div>
+        <div class="notice-note">${s.note}</div>
+      </div>
+    `).join('');
+    updateNoticeIndicator();
+    startNoticeAutoplay();
+
+    // 스와이프로 위치가 바뀌면 현재 인덱스/표시 갱신 + 자동재생 타이머 리셋
+    let scrollDebounce = null;
+    track.addEventListener('scroll', () => {
+      clearTimeout(scrollDebounce);
+      scrollDebounce = setTimeout(() => {
+        noticeIndex = Math.round(track.scrollLeft / track.clientWidth);
+        updateNoticeIndicator();
+      }, 100);
+    });
+    track.addEventListener('touchstart', () => { if(!noticePaused) restartNoticeAutoplay(); });
+  }
+
+  function updateNoticeIndicator(){
+    document.getElementById('notice-indicator-text').textContent = `${noticeIndex + 1} / ${NOTICE_SLIDES.length}`;
+    document.getElementById('notice-indicator-icon').innerHTML = noticePaused
+      ? '<svg viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>'
+      : '<svg viewBox="0 0 24 24" fill="white"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>';
+  }
+
+  function goToNoticeSlide(i){
+    const track = document.getElementById('notice-track');
+    noticeIndex = ((i % NOTICE_SLIDES.length) + NOTICE_SLIDES.length) % NOTICE_SLIDES.length;
+    track.scrollTo({ left: noticeIndex * track.clientWidth, behavior: 'smooth' });
+    updateNoticeIndicator();
+  }
+
+  function startNoticeAutoplay(){
+    clearInterval(noticeTimer);
+    if(noticePaused || NOTICE_SLIDES.length <= 1) return;
+    noticeTimer = setInterval(() => goToNoticeSlide(noticeIndex + 1), 5000);
+  }
+  function restartNoticeAutoplay(){ startNoticeAutoplay(); }
+
+  document.getElementById('notice-indicator').addEventListener('click', () => {
+    noticePaused = !noticePaused;
+    updateNoticeIndicator();
+    startNoticeAutoplay();
+  });
 
   function showPage(name){
     const activeEl = document.querySelector('.page.active');
@@ -1195,6 +1304,7 @@
   }
 
   renderHomeCharacters();
+  renderNoticeCarousel();
 })();
 </script>
 </body>
