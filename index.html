@@ -45,23 +45,8 @@
     -webkit-overflow-scrolling:touch; scrollbar-width:none;
   }
   .notice-track::-webkit-scrollbar{ display:none; }
-  .notice-slide{
-    flex:0 0 100%; scroll-snap-align:start; position:relative; box-sizing:border-box;
-    min-height:170px; padding:22px 100px 22px 22px; border-radius:20px;
-    background: radial-gradient(120% 100% at 85% 0%, rgba(94,106,191,0.55) 0%, rgba(18,20,26,0) 55%), linear-gradient(160deg, #23283a 0%, #12141a 75%);
-    display:flex; flex-direction:column; justify-content:center; gap:8px;
-  }
-  .notice-slide .notice-title{ font-weight:700; font-size:19px; line-height:1.35; }
-  .notice-slide .notice-desc{ font-size:14px; color:var(--text-secondary); line-height:1.5; }
-  .notice-slide .notice-note{ font-size:11.5px; color:var(--text-tertiary); line-height:1.5; margin-top:6px; }
-  .notice-ring{
-    position:absolute; top:26px; right:22px; width:70px; height:70px; border-radius:50%;
-    border:5px solid transparent;
-    background: linear-gradient(140deg, #dff1ff, #6f8cff) border-box;
-    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor; mask-composite: exclude;
-    filter: drop-shadow(0 0 14px rgba(120,160,255,0.55));
-  }
+  .notice-slide{ flex:0 0 100%; scroll-snap-align:start; }
+  .notice-slide img{ display:block; width:100%; height:auto; border-radius:20px; }
   .notice-indicator{
     position:absolute; bottom:14px; right:16px; background:rgba(0,0,0,0.45); backdrop-filter:blur(6px);
     border:none; border-radius:20px; padding:6px 12px; color:#fff; font-size:12px; font-weight:600;
@@ -703,16 +688,8 @@
 
   // ---------- 홈 소식 캐러셀 (자동 5초 슬라이드 + 스와이프 + 반복) ----------
   const NOTICE_SLIDES = [
-    {
-      title: '광고 없는 AI 캐릭터챗<br>rally로, 지금 정착하세요',
-      desc: '너와 나의 대화가 하나 되어<br>만들어 갈 유니버스',
-      note: '- rally(랠리)가 사용하는 API는 Google의 gemini-3.5-flash-lite로, 광고 없는 서비스 환경을 제공하고 있어요.'
-    },
-    {
-      title: '오픈 베타 테스트!<br>어서오세요, 이 곳에',
-      desc: 'rally에는 재화도, 과금 유도도,<br>그 흔한 현질 요소도 없어요',
-      note: '- 해당 기준은 2026년 7월 28일부터 시행돼요.'
-    }
+    { image: 'assets/notice-1.png' },
+    { image: 'assets/notice-2.png' }
   ];
 
   let noticeIndex = 0;
@@ -723,10 +700,7 @@
     const track = document.getElementById('notice-track');
     track.innerHTML = NOTICE_SLIDES.map(s => `
       <div class="notice-slide">
-        <div class="notice-ring"></div>
-        <div class="notice-title">${s.title}</div>
-        <div class="notice-desc">${s.desc}</div>
-        <div class="notice-note">${s.note}</div>
+        <img src="${s.image}" alt="공지">
       </div>
     `).join('');
     updateNoticeIndicator();
