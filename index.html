@@ -21,6 +21,18 @@
   * { margin:0; padding:0; box-sizing:border-box; }
   html, body{ background: var(--bg); font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif; color: var(--text-primary); }
   #app{ width:100%; max-width:390px; margin:0 auto; min-height:100vh; position:relative; overflow-x:hidden; padding-bottom:110px; }
+
+  .loading-overlay{
+    position:fixed; inset:0; max-width:390px; margin:0 auto; background:var(--bg);
+    z-index:999; display:none; align-items:center; justify-content:center;
+  }
+  .loading-overlay.active{ display:flex; }
+  .loading-ring{
+    width:42px; height:42px; border-radius:50%;
+    border:4px solid rgba(255,255,255,0.15); border-top-color:#fff;
+    animation: loadingSpin 0.8s linear infinite;
+  }
+  @keyframes loadingSpin{ to { transform: rotate(360deg); } }
   .page{ display:none; padding-top:70px; position:absolute; top:0; left:0; width:100%; min-height:100%; will-change:transform; }
   .page.active{ display:block; }
   .page.sliding{ transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1); }
@@ -234,6 +246,8 @@
 </head>
 <body>
 <div id="app">
+  <div class="loading-overlay" id="loading-overlay"><div class="loading-ring"></div></div>
+
 
   <!-- ================= HOME ================= -->
   <div class="page active" id="page-home">
@@ -507,7 +521,7 @@
     }
   }
 
-  document.getElementById('btn-back-signup').addEventListener('click', () => showPage('profile'));
+  document.getElementById('btn-back-signup').addEventListener('click', () => showPage('profile', -1));
 
   document.getElementById('btn-email-continue').addEventListener('click', () => {
     document.getElementById('signup-default-buttons').style.display = 'none';
@@ -762,7 +776,7 @@
     });
   }
 
-  function showPage(name){
+  function showPage(name, dir){
     document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('on', b.dataset.page === name));
     document.getElementById('nav-bar').style.display = (name === 'chatroom' || name === 'search' || name === 'detail' || name === 'signup') ? 'none' : 'flex';
     if(name === 'chat') renderChatList();
@@ -770,30 +784,36 @@
     if(name === 'create') renderCreateMyCharacters();
     if(name === 'profile') renderProfileContent();
 
-    if(TAB_ORDER.includes(name)){
-      const oldName = currentTabName;
-      if(oldName !== name && TAB_ORDER.includes(oldName)){
-        slideTabTransition(oldName, name);
-      } else {
-        clearPendingSlideCleanup();
-        hardResetOtherPages(['page-' + name]);
-        document.getElementById('page-' + name).classList.add('active');
-      }
-      currentTabName = name;
-    } else {
-      // 비-탭 페이지(검색/캐릭터소개/채팅방/회원가입): 슬라이드 없이 즉시 전환
+    const oldName = lastPageName;
+    if(oldName === name){
       clearPendingSlideCleanup();
       hardResetOtherPages(['page-' + name]);
       document.getElementById('page-' + name).classList.add('active');
+    } else {
+      let direction = dir;
+      if(direction === undefined){
+        if(TAB_ORDER.includes(oldName) && TAB_ORDER.includes(name)){
+          direction = TAB_ORDER.indexOf(name) > TAB_ORDER.indexOf(oldName) ? 1 : -1;
+        } else {
+          direction = 1; // 더 깊이 들어가는 화면(검색/소개/채팅방/회원가입 등)은 기본적으로 오른쪽에서 들어옴
+        }
+      }
+      slidePageTransition(oldName, name, direction);
     }
+
+    if(TAB_ORDER.includes(name)) currentTabName = name;
     lastPageName = name;
   }
 
-  function slideTabTransition(oldName, newName){
+  function slidePageTransition(oldName, newName, dir){
     clearPendingSlideCleanup();
     const oldEl = document.getElementById('page-' + oldName);
     const newEl = document.getElementById('page-' + newName);
-    const dir = TAB_ORDER.indexOf(newName) > TAB_ORDER.indexOf(oldName) ? 1 : -1;
+    if(!oldEl || !newEl){
+      document.querySelectorAll('.page').forEach(p => { p.classList.remove('active', 'sliding'); p.style.transform = ''; });
+      if(newEl) newEl.classList.add('active');
+      return;
+    }
 
     // 지금 전환에 관여하지 않는 다른 페이지는 즉시 확실하게 숨김 처리 (연타 시 겹침 방지)
     hardResetOtherPages(['page-' + oldName, 'page-' + newName]);
@@ -823,7 +843,7 @@
     renderSearchResults('');
     showPage('search');
   });
-  document.getElementById('btn-back-search').addEventListener('click', () => showPage('home'));
+  document.getElementById('btn-back-search').addEventListener('click', () => showPage('home', -1));
   document.getElementById('search-input').addEventListener('input', (e) => renderSearchResults(e.target.value));
 
   // ---------- Image upload ----------
@@ -989,10 +1009,13 @@
     return el;
   }
 
+  function showLoading(){ document.getElementById('loading-overlay').classList.add('active'); }
+  function hideLoading(){ document.getElementById('loading-overlay').classList.remove('active'); }
+
   // ---------- Home: 최근(공용)/인기(내 대화 기준) 캐릭터 ----------
   async function renderHomeCharacters(){
     const recentWrap = document.getElementById('home-recent-characters');
-    recentWrap.innerHTML = '<div class="empty-hint" style="padding:0;">불러오는 중...</div>';
+    showLoading();
 
     const shared = await fetchSharedCharacters(30);
     // 아직 클라우드 동기화 전인 내 로컬 캐릭터도 합쳐서 보여줌 (오프라인 대비)
@@ -1004,6 +1027,7 @@
       recentWrap.innerHTML = '<div class="empty-hint" style="padding:0;">아직 만들어진 캐릭터가 없어요. 창작 탭에서 첫 캐릭터를 만들어보세요!</div>';
       document.getElementById('home-popular-section').style.display = 'none';
       document.getElementById('home-popular-divider').style.display = 'none';
+      hideLoading();
       return;
     }
 
@@ -1029,6 +1053,7 @@
       popSection.style.display = 'none';
       popDivider.style.display = 'none';
     }
+    hideLoading();
   }
 
   // ---------- 창작 탭: 내가 만든 캐릭터 목록 ----------
@@ -1114,7 +1139,7 @@
     document.getElementById('detail-personality').textContent = c.personality || '';
     showPage('detail');
   }
-  document.getElementById('btn-back-detail').addEventListener('click', () => showPage(detailReturnPage));
+  document.getElementById('btn-back-detail').addEventListener('click', () => showPage(detailReturnPage, -1));
   document.getElementById('btn-start-chat').addEventListener('click', () => { if(detailCharId) openChatroom(detailCharId); });
 
   function openChatroom(charId){
@@ -1137,7 +1162,7 @@
     showPage('chatroom');
   }
 
-  document.getElementById('btn-back-chat').addEventListener('click', () => showPage('chat'));
+  document.getElementById('btn-back-chat').addEventListener('click', () => showPage('chat', -1));
 
   // ---------- 한 글자씩 타이핑 애니메이션 (마크다운 강조/기울임 유지) ----------
   function tokenizeForTypewriter(text){
