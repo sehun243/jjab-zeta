@@ -20,6 +20,7 @@
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   html, body{ background: var(--bg); font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif; color: var(--text-primary); }
+  input, textarea, button, select{ font-family: inherit; }
   #app{ width:100%; max-width:390px; margin:0 auto; min-height:100vh; position:relative; overflow-x:hidden; padding-bottom:110px; }
 
   .loading-overlay{
@@ -73,6 +74,12 @@
   .empty-hint{ padding:0 30px; color:var(--text-secondary); font-size:14px; line-height:1.6; }
 
   /* Character cards (홈/목록 공용) */
+  .card-row-wrap{ position:relative; }
+  .card-row-wrap::before, .card-row-wrap::after{
+    content:''; position:absolute; top:0; bottom:0; width:26px; z-index:2; pointer-events:none;
+  }
+  .card-row-wrap::before{ left:0; background:linear-gradient(to right, var(--bg) 0%, rgba(18,20,26,0) 100%); }
+  .card-row-wrap::after{ right:0; background:linear-gradient(to left, var(--bg) 0%, rgba(18,20,26,0) 100%); }
   .card-row{ display:flex; gap:10px; padding:0 30px; overflow-x:auto; scrollbar-width:none; }
   .card-row::-webkit-scrollbar{ display:none; }
   .char-card{ flex:0 0 auto; width:150px; cursor:pointer; }
@@ -169,8 +176,8 @@
     content:''; position:absolute; inset:0;
     background: linear-gradient(180deg, rgba(18,20,26,0.3) 0%, rgba(18,20,26,0.05) 35%, rgba(18,20,26,0.15) 60%, rgba(18,20,26,0.6) 100%);
   }
-  .signup-wrap{ position:relative; z-index:1; padding:20px 28px 40px; min-height:calc(100vh - 70px); display:flex; flex-direction:column; }
-  .signup-hero{ text-align:center; padding:24px 0 32px; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .signup-wrap{ position:relative; z-index:1; padding:20px 28px 28px; min-height:calc(100vh - 70px); min-height:calc(100dvh - 70px); display:flex; flex-direction:column; }
+  .signup-hero{ text-align:center; padding:16px 0 24px; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; }
   .signup-logo{ width:97px; height:50px; margin-bottom:20px; }
   .signup-logo img{ width:100%; height:100%; object-fit:contain; }
   .signup-brand{ font-size:24px; font-weight:700; letter-spacing:-0.3px; margin-bottom:18px; }
@@ -182,11 +189,11 @@
     display:flex; align-items:center; justify-content:center; gap:8px;
   }
   .btn-outline svg{ width:18px; height:18px; }
-  .signup-divider{ display:flex; align-items:center; text-align:center; margin:20px 0; color:var(--text-tertiary); font-size:13px; }
+  .signup-divider{ display:flex; align-items:center; text-align:center; margin:16px 0; color:var(--text-tertiary); font-size:13px; }
   .signup-divider::before, .signup-divider::after{ content:''; flex:1; height:1px; background:rgba(255,255,255,0.15); }
   .signup-divider span{ padding:0 12px; }
   .btn-google{
-    width:330px; max-width:100%; height:55px; margin:0 auto 20px; box-sizing:border-box;
+    width:330px; max-width:100%; height:55px; margin:0 auto 16px; box-sizing:border-box;
     background:#1B1D24; color:#fff; border:1px solid rgba(255,255,255,0.1);
     border-radius:14px; padding:0 15px; font-size:15px; font-weight:600; cursor:pointer;
     display:flex; align-items:center; justify-content:center; gap:10px;
@@ -270,13 +277,13 @@
     </div>
 
     <div class="section" id="home-recent-section">
-      <div class="section-title">⏰️ 찾았다! 지금 막 만들어진 캐릭터들</div>
-      <div class="card-row" id="home-recent-characters"></div>
+      <div class="section-title">⏰ 찾았다! 지금 막 만들어진 캐릭터들</div>
+      <div class="card-row-wrap"><div class="card-row" id="home-recent-characters"></div></div>
     </div>
     <div class="section-divider" id="home-popular-divider" style="display:none;"></div>
     <div class="section" id="home-popular-section" style="display:none;">
       <div class="section-title">😉 취향저격! 인기 캐릭터 모음.zip</div>
-      <div class="card-row" id="home-popular-characters"></div>
+      <div class="card-row-wrap"><div class="card-row" id="home-popular-characters"></div></div>
     </div>
   </div>
 
@@ -306,7 +313,7 @@
 
     <div class="section" style="padding-top:0; padding-bottom:8px;">
       <div class="section-title">내가 만든 캐릭터</div>
-      <div class="card-row" id="create-my-characters"></div>
+      <div class="card-row-wrap"><div class="card-row" id="create-my-characters"></div></div>
     </div>
 
     <div class="form-wrap">
