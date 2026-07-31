@@ -75,13 +75,11 @@
 
   /* Character cards (홈/목록 공용) */
   .card-row-wrap{ position:relative; }
-  .card-row-wrap::before, .card-row-wrap::after{
-    content:''; position:absolute; top:0; bottom:0; width:30px; z-index:2; pointer-events:none;
-    backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
-  }
-  .card-row-wrap::before{ left:0; background:linear-gradient(to right, var(--bg) 0%, var(--bg) 35%, rgba(18,20,26,0) 100%); }
-  .card-row-wrap::after{ right:0; background:linear-gradient(to left, var(--bg) 0%, var(--bg) 35%, rgba(18,20,26,0) 100%); }
   .card-row{ display:flex; gap:10px; padding:0 30px; overflow-x:auto; scrollbar-width:none; }
+  .card-row-wrap .card-row{
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 26px, #000 calc(100% - 26px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 26px, #000 calc(100% - 26px), transparent 100%);
+  }
   .card-row::-webkit-scrollbar{ display:none; }
   .char-card{ flex:0 0 auto; width:150px; cursor:pointer; }
   .char-thumb{
