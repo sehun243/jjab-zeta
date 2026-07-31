@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
 <title>랠리</title>
 <meta name="theme-color" content="#12141a">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -34,9 +34,9 @@
     animation: loadingSpin 0.8s linear infinite;
   }
   @keyframes loadingSpin{ to { transform: rotate(360deg); } }
-  .page{ display:none; padding-top:70px; position:absolute; top:0; left:0; width:100%; min-height:100%; will-change:transform; }
+  .page{ display:none; padding-top:70px; position:absolute; top:0; left:0; width:100%; min-height:100%; will-change:left; }
   .page.active{ display:block; }
-  .page.sliding{ transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1); }
+  .page.sliding{ transition: left 0.32s cubic-bezier(0.32, 0.72, 0, 1); }
   #page-chatroom.active{ padding-top:0; }
 
   /* Top bar */
@@ -777,7 +777,7 @@
     document.querySelectorAll('.page').forEach(p => {
       if(!keepIds.includes(p.id)){
         p.classList.remove('active', 'sliding');
-        p.style.transform = '';
+        p.style.left = '';
       }
     });
   }
@@ -816,7 +816,7 @@
     const oldEl = document.getElementById('page-' + oldName);
     const newEl = document.getElementById('page-' + newName);
     if(!oldEl || !newEl){
-      document.querySelectorAll('.page').forEach(p => { p.classList.remove('active', 'sliding'); p.style.transform = ''; });
+      document.querySelectorAll('.page').forEach(p => { p.classList.remove('active', 'sliding'); p.style.left = ''; });
       if(newEl) newEl.classList.add('active');
       return;
     }
@@ -825,20 +825,20 @@
     hardResetOtherPages(['page-' + oldName, 'page-' + newName]);
 
     newEl.classList.remove('sliding'); oldEl.classList.remove('sliding');
-    newEl.style.transform = `translateX(${dir * 100}%)`;
+    newEl.style.left = `${dir * 100}%`;
     newEl.classList.add('active');
     // 강제 리플로우 후 애니메이션 시작
     newEl.getBoundingClientRect();
     newEl.classList.add('sliding'); oldEl.classList.add('sliding');
     requestAnimationFrame(() => {
-      oldEl.style.transform = `translateX(${-dir * 100}%)`;
-      newEl.style.transform = 'translateX(0)';
+      oldEl.style.left = `${-dir * 100}%`;
+      newEl.style.left = '0%';
     });
     slideCleanupTimer = setTimeout(() => {
       oldEl.classList.remove('active', 'sliding');
       newEl.classList.remove('sliding');
-      oldEl.style.transform = '';
-      newEl.style.transform = '';
+      oldEl.style.left = '';
+      newEl.style.left = '';
       slideCleanupTimer = null;
     }, 330);
   }
@@ -1339,6 +1339,18 @@
 
   renderHomeCharacters();
   renderNoticeCarousel();
+
+  // 모바일 키보드가 뜰 때 하단 입력바가 키보드 위에 정확히 고정되도록 보강
+  if(window.visualViewport){
+    const inputBar = document.querySelector('.chatroom-inputbar');
+    function adjustForKeyboard(){
+      if(!inputBar) return;
+      const heightDiff = window.innerHeight - window.visualViewport.height;
+      inputBar.style.bottom = (heightDiff > 60 ? heightDiff : 0) + 'px';
+    }
+    window.visualViewport.addEventListener('resize', adjustForKeyboard);
+    window.visualViewport.addEventListener('scroll', adjustForKeyboard);
+  }
 })();
 </script>
 </body>
